@@ -1,0 +1,7 @@
+# Example: Use the mock provider for offline testing
+provider: mock
+model: mock-model
+temperature: 0.0
+max_tokens: 1024
+timeout: 30.0
+extra: {}

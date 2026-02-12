@@ -1,0 +1,51 @@
+[build-system]
+requires = ["setuptools>=68.0", "setuptools-scm>=8.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "llm-test-framework"
+version = "0.1.0"
+description = "A flexible testing framework for LLM providers"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "httpx>=0.27",
+    "pydantic>=2.0",
+    "pydantic-settings>=2.0",
+    "openai>=1.0",
+    "anthropic>=0.39",
+    "numpy>=1.26",
+    "jinja2>=3.1",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8.0",
+    "pytest-asyncio>=0.24",
+    "pytest-timeout>=2.2",
+    "pytest-html>=4.1",
+    "respx>=0.21",
+    "ruff>=0.8",
+]
+
+[tool.setuptools.packages.find]
+include = ["llm_test_framework*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+markers = [
+    "slow: marks tests that call real LLM APIs",
+    "accuracy: response quality tests",
+    "performance: latency and throughput tests",
+    "safety: harmful content detection tests",
+    "rag: RAG pipeline tests",
+]
+addopts = "-v --tb=short"
+
+[tool.ruff]
+target-version = "py310"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "N", "W", "UP"]
