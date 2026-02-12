@@ -1,6 +1,14 @@
 # LLM Test Framework
 
-A flexible Python testing framework for evaluating LLM providers. Built on **pytest**, it lets you run accuracy, performance, safety, and RAG tests against any OpenAI-compatible or Anthropic API — or swap in a mock provider for fast, offline iteration.
+A flexible Python testing framework for evaluating LLM providers. Built on **pytest** and **DeepEval**, it lets you run accuracy, performance, safety, and RAG tests against any OpenAI-compatible or Anthropic API — or swap in a mock provider for fast, offline iteration.
+
+## Key Features
+
+- **DeepEval Integration**: Leverage sophisticated LLM-as-a-judge metrics for answer relevancy, faithfulness, hallucination detection, toxicity, and bias
+- **RAG-Specific Metrics**: Evaluate retrieval quality with contextual relevancy, precision, and recall metrics
+- **Multi-Provider Support**: Test against OpenAI, Anthropic, or custom providers
+- **Mock Provider**: Fast, offline testing without API costs
+- **Comprehensive Coverage**: Accuracy, performance, safety, and RAG pipeline tests
 
 ## Project Structure
 
@@ -17,6 +25,7 @@ llm_test_framework/
 │   └── rag/
 │       └── pipeline.py            # RAGPipeline, Retriever ABC, StaticRetriever
 ├── evaluators/
+│   ├── deepeval_integration.py    # DeepEval metrics integration
 │   ├── semantic_similarity.py     # cosine & Jaccard (bag-of-words)
 │   └── metrics.py                 # BLEU, keyword checks, length validation
 └── reports/
@@ -59,6 +68,25 @@ cp .env.example .env
 
 YAML config files in `configs/` show example provider setups for reference.
 
+## Why DeepEval?
+
+The framework includes both simple metrics (keyword matching, BLEU, cosine similarity) and DeepEval's sophisticated LLM-as-a-judge metrics:
+
+**Simple Metrics (Good for):**
+- Fast, offline testing
+- Basic keyword/phrase validation
+- No API costs
+- Deterministic results
+
+**DeepEval Metrics (Good for):**
+- Detecting hallucinations and factual errors
+- Evaluating answer relevancy and quality
+- Identifying bias and toxicity
+- RAG-specific evaluation (context relevancy, precision, recall)
+- Production-grade LLM evaluation
+
+Use simple metrics for rapid development and smoke tests. Use DeepEval metrics for comprehensive evaluation before production deployment.
+
 ## Running Tests
 
 ```bash
@@ -71,15 +99,33 @@ pytest tests/performance/
 pytest tests/safety/
 pytest tests/rag/
 
+# Run DeepEval tests specifically (requires API key for LLM-as-a-judge)
+pytest tests/accuracy/test_deepeval_llm.py
+pytest tests/rag/test_deepeval_rag.py
+
 # Run by marker
 pytest -m accuracy
 pytest -m safety
 pytest -m performance
 pytest -m rag
 
+# Skip slow tests (DeepEval tests make API calls)
+pytest -m "not slow"
+
 # Generate an HTML test report
 pytest --html=reports/pytest_report.html --self-contained-html
 ```
+
+### DeepEval Tests Configuration
+
+DeepEval tests require an OpenAI API key (for GPT-4 as the judge) by default. Set the environment variable:
+
+```bash
+export OPENAI_API_KEY=sk-...
+pytest tests/accuracy/test_deepeval_llm.py -m slow
+```
+
+You can also configure DeepEval to use different models for evaluation by passing the `model` parameter to metrics.
 
 ## Testing Against Real Providers
 
@@ -97,6 +143,94 @@ LLM_TEST_DEFAULT_PROVIDER=anthropic \
 LLM_TEST_DEFAULT_MODEL=claude-sonnet-4-5-20250929 \
 LLM_TEST_ANTHROPIC_API_KEY=sk-ant-... \
 pytest -m accuracy
+```
+
+## Using DeepEval Metrics
+
+### Basic DeepEval Usage
+
+DeepEval provides sophisticated LLM evaluation metrics that go beyond simple keyword matching:
+
+```python
+from llm_test_framework.core.config import ProviderConfig
+from llm_test_framework.core.providers import create_client
+from llm_test_framework.evaluators import (
+    DeepEvalMetrics,
+    assert_metric,
+    create_test_case_from_response,
+)
+
+config = ProviderConfig(provider="openai", model="gpt-4o", api_key="sk-...")
+client = create_client(config)
+
+# Test answer relevancy
+prompt = "What is Python?"
+response = client.complete(prompt)
+
+test_case = create_test_case_from_response(prompt, response)
+metric = DeepEvalMetrics.answer_relevancy(threshold=0.7)
+
+assert_metric(test_case, metric)
+```
+
+### Available DeepEval Metrics
+
+**General LLM Metrics:**
+- `answer_relevancy()` - Measures how relevant the answer is to the query
+- `faithfulness()` - Checks if output is faithful to provided context
+- `hallucination()` - Detects hallucinated facts not in context
+
+**Safety Metrics:**
+- `toxicity()` - Detects toxic, harmful, or offensive content
+- `bias()` - Identifies biased content (gender, race, age, etc.)
+
+**RAG-Specific Metrics:**
+- `contextual_relevancy()` - Measures if retrieved context is relevant
+- `contextual_precision()` - Evaluates precision of retrieved context
+- `contextual_recall()` - Evaluates recall of retrieved context
+
+### Testing RAG with DeepEval
+
+```python
+from llm_test_framework.core.rag import RAGPipeline, StaticRetriever
+from llm_test_framework.evaluators import (
+    DeepEvalMetrics,
+    assert_metric,
+    create_test_case_from_rag_result,
+)
+
+# Create RAG pipeline
+retriever = StaticRetriever([
+    "Python was created by Guido van Rossum in 1991.",
+    "Python is known for its clean syntax and readability.",
+])
+pipeline = RAGPipeline(client=client, retriever=retriever)
+
+# Query and evaluate
+result = pipeline.query("Who created Python?")
+
+test_case = create_test_case_from_rag_result(result)
+faithfulness_metric = DeepEvalMetrics.faithfulness(threshold=0.7)
+relevancy_metric = DeepEvalMetrics.contextual_relevancy(threshold=0.7)
+
+assert_metric(test_case, faithfulness_metric)
+assert_metric(test_case, relevancy_metric)
+```
+
+### Testing for Safety Issues
+
+```python
+# Test for toxicity
+test_case = create_test_case_from_response(
+    "Tell me about climate change",
+    response
+)
+toxicity_metric = DeepEvalMetrics.toxicity(threshold=0.5)
+assert_metric(test_case, toxicity_metric)
+
+# Test for bias
+bias_metric = DeepEvalMetrics.bias(threshold=0.5)
+assert_metric(test_case, bias_metric)
 ```
 
 ## Using the Framework in Code
