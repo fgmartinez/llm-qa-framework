@@ -1,58 +1,65 @@
-"""Accuracy tests — validate that LLM responses meet quality expectations."""
+"""Accuracy tests — data-driven from data/questions_qa.json.
+
+Tests correctness, relevance, and fluency for each QA scenario.
+Add new scenarios by editing the JSON file; no code changes needed.
+"""
 
 from __future__ import annotations
 
 import pytest
 
 from llm_test_framework.core.providers.mock import MockClient
+from llm_test_framework.data_loader import load_scenarios
 from llm_test_framework.evaluators import (
-    bleu_score,
     contains_keywords,
-    cosine_similarity,
-    response_length_in_range,
+    correctness,
+    fluency,
+    relevance,
 )
+
+_QA = load_scenarios("questions_qa.json")
+_QA_IDS = [s["id"] for s in _QA]
 
 
 @pytest.mark.accuracy
-class TestResponseQuality:
-    def test_response_contains_expected_keywords(self, mock_client: MockClient):
-        response = mock_client.complete("What is Python?")
-        assert contains_keywords(response.text, ["python", "language"])
+@pytest.mark.parametrize("scenario", _QA, ids=_QA_IDS)
+class TestCorrectnessFromJSON:
+    """Each QA scenario is evaluated for correctness against its expected answer."""
 
-    def test_response_similarity_to_reference(self, mock_client: MockClient):
-        response = mock_client.complete("What is Python?")
-        reference = "Python is a popular high-level programming language."
-        similarity = cosine_similarity(response.text, reference)
-        assert similarity > 0.5, f"Similarity {similarity:.3f} below threshold"
+    def test_correctness(self, scenario: dict, mock_client: MockClient):
+        response = mock_client.complete(scenario["question"])
+        threshold = scenario["metrics"]["correctness_threshold"]
+        result = correctness(response.text, scenario["expected_answer"], threshold=threshold)
+        assert result.passed, (
+            f"[{scenario['id']}] correctness={result.score:.3f} < {threshold} | {result.detail}"
+        )
 
-    def test_response_length_within_bounds(self, mock_client: MockClient):
-        response = mock_client.complete("Say hello")
-        assert response_length_in_range(response.text, min_words=2, max_words=50)
-
-    def test_bleu_against_reference(self, mock_client: MockClient):
-        response = mock_client.complete("What is 2+2?")
-        reference = "The answer is 4."
-        score = bleu_score(reference, response.text)
-        assert score > 0.5, f"BLEU {score:.3f} below threshold"
-
-    def test_deterministic_mock_output(self, mock_client: MockClient):
-        """Mock client should return the same output for the same prompt."""
-        r1 = mock_client.complete("What is 2+2?")
-        r2 = mock_client.complete("What is 2+2?")
-        assert r1.text == r2.text
+    def test_expected_keywords(self, scenario: dict, mock_client: MockClient):
+        response = mock_client.complete(scenario["question"])
+        assert contains_keywords(response.text, scenario["expected_keywords"]), (
+            f"[{scenario['id']}] Missing keywords {scenario['expected_keywords']} "
+            f"in: {response.text!r}"
+        )
 
 
 @pytest.mark.accuracy
-@pytest.mark.parametrize(
-    "prompt,expected_keywords",
-    [
-        ("What is Python?", ["python"]),
-        ("Say hello", ["hello"]),
-        ("What is 2+2?", ["4"]),
-    ],
-)
-def test_keyword_presence_parametrized(
-    mock_client: MockClient, prompt: str, expected_keywords: list[str]
-):
-    response = mock_client.complete(prompt)
-    assert contains_keywords(response.text, expected_keywords)
+@pytest.mark.parametrize("scenario", _QA, ids=_QA_IDS)
+class TestRelevanceFromJSON:
+    def test_relevance(self, scenario: dict, mock_client: MockClient):
+        response = mock_client.complete(scenario["question"])
+        threshold = scenario["metrics"]["relevance_threshold"]
+        result = relevance(scenario["question"], response.text, threshold=threshold)
+        assert result.passed, (
+            f"[{scenario['id']}] relevance={result.score:.3f} < {threshold} | {result.detail}"
+        )
+
+
+@pytest.mark.accuracy
+@pytest.mark.parametrize("scenario", _QA, ids=_QA_IDS)
+class TestFluencyFromJSON:
+    def test_fluency(self, scenario: dict, mock_client: MockClient):
+        response = mock_client.complete(scenario["question"])
+        result = fluency(response.text, threshold=0.4)
+        assert result.passed, (
+            f"[{scenario['id']}] fluency={result.score:.3f} | {result.detail}"
+        )
