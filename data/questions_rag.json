@@ -1,0 +1,128 @@
+{
+  "description": "RAG-specific test scenarios with context chunks for faithfulness and hallucination testing.",
+  "scenarios": [
+    {
+      "id": "rag_001",
+      "question": "What are Dr. Chen's available days?",
+      "contexts": [
+        "Dr. James Chen, MD — Internal Medicine. Board-certified in Internal Medicine. Medical degree from Johns Hopkins University. Specializes in cardiology consultations, diabetes management, and geriatric care. Available Tuesday, Thursday, and Saturday."
+      ],
+      "expected_answer": "Dr. Chen is available on Tuesday, Thursday, and Saturday.",
+      "expected_keywords": ["tuesday", "thursday", "saturday"],
+      "category": "faithfulness",
+      "metrics": {
+        "correctness_threshold": 0.7,
+        "faithfulness_threshold": 0.8,
+        "relevance_threshold": 0.6
+      }
+    },
+    {
+      "id": "rag_002",
+      "question": "How much does a flu shot cost?",
+      "contexts": [
+        "Flu shots are available September through March, $40 or free with most insurance."
+      ],
+      "expected_answer": "A flu shot costs $40, or it is free with most insurance plans. Flu shots are available from September through March.",
+      "expected_keywords": ["40", "free", "insurance"],
+      "category": "faithfulness",
+      "metrics": {
+        "correctness_threshold": 0.6,
+        "faithfulness_threshold": 0.8,
+        "relevance_threshold": 0.6
+      }
+    },
+    {
+      "id": "rag_003",
+      "question": "What happens if I miss my appointment without cancelling?",
+      "contexts": [
+        "Patients must cancel or reschedule at least 24 hours before their appointment. A $50 no-show fee applies to missed appointments without prior notice. Three consecutive no-shows may result in discharge from the practice."
+      ],
+      "expected_answer": "A $50 no-show fee applies. Three consecutive no-shows may result in discharge from the practice.",
+      "expected_keywords": ["50", "no-show", "discharge"],
+      "category": "faithfulness",
+      "metrics": {
+        "correctness_threshold": 0.5,
+        "faithfulness_threshold": 0.8,
+        "relevance_threshold": 0.6
+      }
+    },
+    {
+      "id": "rag_004",
+      "question": "Can Dr. Patel treat a sports injury?",
+      "contexts": [
+        "Dr. Sarah Patel, DO — Family Medicine. Board-certified in Family Medicine and Sports Medicine. Medical degree from Philadelphia College of Osteopathic Medicine. Specializes in musculoskeletal injuries, sports physicals, and women's health. Available Monday through Friday."
+      ],
+      "expected_answer": "Yes, Dr. Patel is board-certified in Sports Medicine and specializes in musculoskeletal injuries and sports physicals.",
+      "expected_keywords": ["sports medicine", "musculoskeletal"],
+      "category": "faithfulness",
+      "metrics": {
+        "correctness_threshold": 0.5,
+        "faithfulness_threshold": 0.8,
+        "relevance_threshold": 0.6
+      }
+    },
+    {
+      "id": "rag_005",
+      "question": "Where do I get an X-ray if the clinic cannot do it?",
+      "contexts": [
+        "Splinting for minor fractures. X-rays referred to Springfield Imaging Center.",
+        "Springfield Imaging Center provides X-rays, MRI, and CT scans."
+      ],
+      "expected_answer": "X-rays are referred to Springfield Imaging Center.",
+      "expected_keywords": ["springfield imaging center"],
+      "category": "faithfulness",
+      "metrics": {
+        "correctness_threshold": 0.6,
+        "faithfulness_threshold": 0.8,
+        "relevance_threshold": 0.6
+      }
+    },
+    {
+      "id": "rag_006",
+      "question": "Does the clinic perform heart surgery?",
+      "contexts": [
+        "Services Offered: Primary Care, Pediatric Care, Women's Health, Vaccinations, Lab Services, Minor Procedures (wound care, suturing, mole and skin tag removal, ear irrigation, splinting).",
+        "For specialized care beyond our scope, we maintain referral relationships with Heartland Cardiology Associates."
+      ],
+      "expected_answer": "No, the clinic does not perform heart surgery. For cardiology needs, they provide referrals to Heartland Cardiology Associates.",
+      "expected_keywords": ["no", "referral", "cardiology"],
+      "category": "hallucination_check",
+      "metrics": {
+        "correctness_threshold": 0.4,
+        "faithfulness_threshold": 0.5,
+        "relevance_threshold": 0.3
+      }
+    },
+    {
+      "id": "rag_007",
+      "question": "What is the clinic's address and phone number?",
+      "contexts": [
+        "Sunrise Medical Clinic is located at 450 Oak Avenue, Springfield, IL 62704. The clinic phone number is (217) 555-0142."
+      ],
+      "expected_answer": "The clinic is at 450 Oak Avenue, Springfield, IL 62704. Phone: (217) 555-0142.",
+      "expected_keywords": ["450 oak avenue", "springfield", "(217) 555-0142"],
+      "category": "faithfulness",
+      "metrics": {
+        "correctness_threshold": 0.7,
+        "faithfulness_threshold": 0.9,
+        "relevance_threshold": 0.7
+      }
+    },
+    {
+      "id": "rag_008",
+      "question": "How do I register for the patient portal?",
+      "contexts": [
+        "New patients can register on the portal by entering their date of birth and the registration code provided at their first visit.",
+        "The online patient portal is at portal.sunrisemedical.com."
+      ],
+      "expected_answer": "Register at portal.sunrisemedical.com by entering your date of birth and the registration code from your first visit.",
+      "expected_keywords": ["date of birth", "registration code"],
+      "category": "faithfulness",
+      "metrics": {
+        "correctness_threshold": 0.5,
+        "faithfulness_threshold": 0.8,
+        "relevance_threshold": 0.6
+      }
+    }
+  ]
+}

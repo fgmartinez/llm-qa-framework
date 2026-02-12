@@ -1,0 +1,115 @@
+{
+  "description": "General QA test scenarios for the medical clinic domain.",
+  "scenarios": [
+    {
+      "id": "qa_001",
+      "question": "What are the clinic's office hours on Thursday?",
+      "expected_answer": "The clinic is open on Thursday from 8:00 AM to 7:00 PM.",
+      "expected_keywords": ["thursday", "8:00", "7:00"],
+      "category": "factual",
+      "metrics": {
+        "correctness_threshold": 0.7,
+        "relevance_threshold": 0.3
+      }
+    },
+    {
+      "id": "qa_002",
+      "question": "Which doctors are available on Monday?",
+      "expected_answer": "Dr. Maria Gonzalez and Dr. Sarah Patel are available on Monday.",
+      "expected_keywords": ["gonzalez", "patel"],
+      "category": "factual",
+      "metrics": {
+        "correctness_threshold": 0.6,
+        "relevance_threshold": 0.3
+      }
+    },
+    {
+      "id": "qa_003",
+      "question": "How much does an annual physical exam cost for self-pay patients?",
+      "expected_answer": "An annual physical exam costs $250 for self-pay patients.",
+      "expected_keywords": ["250"],
+      "category": "factual",
+      "metrics": {
+        "correctness_threshold": 0.6,
+        "relevance_threshold": 0.3
+      }
+    },
+    {
+      "id": "qa_004",
+      "question": "What is the cancellation policy for appointments?",
+      "expected_answer": "Patients must cancel or reschedule at least 24 hours before their appointment. A $50 no-show fee applies to missed appointments without prior notice.",
+      "expected_keywords": ["24 hours", "50", "no-show"],
+      "category": "policy",
+      "metrics": {
+        "correctness_threshold": 0.5,
+        "relevance_threshold": 0.2
+      }
+    },
+    {
+      "id": "qa_005",
+      "question": "How can I schedule an appointment?",
+      "expected_answer": "You can schedule an appointment by calling (217) 555-0142, using the online patient portal at portal.sunrisemedical.com, or walking in.",
+      "expected_keywords": ["call", "portal"],
+      "category": "procedural",
+      "metrics": {
+        "correctness_threshold": 0.5,
+        "relevance_threshold": 0.3
+      }
+    },
+    {
+      "id": "qa_006",
+      "question": "Does the clinic accept Blue Cross Blue Shield insurance?",
+      "expected_answer": "Yes, the clinic accepts Blue Cross Blue Shield insurance.",
+      "expected_keywords": ["yes", "blue cross"],
+      "category": "factual",
+      "metrics": {
+        "correctness_threshold": 0.5,
+        "relevance_threshold": 0.5
+      }
+    },
+    {
+      "id": "qa_007",
+      "question": "What vaccinations does the clinic offer?",
+      "expected_answer": "The clinic offers flu shots, COVID-19 vaccinations, tetanus, hepatitis, HPV, shingles, pneumonia, and travel vaccinations.",
+      "expected_keywords": ["flu", "covid"],
+      "category": "factual",
+      "metrics": {
+        "correctness_threshold": 0.5,
+        "relevance_threshold": 0.3
+      }
+    },
+    {
+      "id": "qa_008",
+      "question": "How long should I wait for lab results?",
+      "expected_answer": "Lab results are typically available within 2-3 business days.",
+      "expected_keywords": ["2-3", "business days"],
+      "category": "factual",
+      "metrics": {
+        "correctness_threshold": 0.6,
+        "relevance_threshold": 0.3
+      }
+    },
+    {
+      "id": "qa_009",
+      "question": "What specialist referrals does the clinic provide?",
+      "expected_answer": "The clinic provides referrals to Springfield General Hospital, Springfield Imaging Center, Heartland Cardiology Associates, Prairie Orthopedic Specialists, and Central Illinois Dermatology.",
+      "expected_keywords": ["referral"],
+      "category": "factual",
+      "metrics": {
+        "correctness_threshold": 0.4,
+        "relevance_threshold": 0.3
+      }
+    },
+    {
+      "id": "qa_010",
+      "question": "Can I get a prescription refill through the patient portal?",
+      "expected_answer": "Yes, prescription refill requests can be submitted through the patient portal. Allow 48 hours for processing. Controlled substances require an in-person visit.",
+      "expected_keywords": ["portal", "48 hours"],
+      "category": "procedural",
+      "metrics": {
+        "correctness_threshold": 0.5,
+        "relevance_threshold": 0.3
+      }
+    }
+  ]
+}
